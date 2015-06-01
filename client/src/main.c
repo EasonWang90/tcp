@@ -35,6 +35,7 @@ struct message{
 	int gatewayID;
 	int rssi;
 	int transmissionRange;
+	WORD second;
 };
 void output(uint8 len1, uint8* data1, uint16 len2, uint8* data2) {
 	DWORD written;
@@ -84,35 +85,6 @@ void print_help() {
 }
 
 void sendMsg(struct message msg){
-//	/*
-//		 * create socket client
-//		 *
-//		 */
-//	WORD sockVersion = MAKEWORD(2,2);
-//		WSADATA data;
-//		if(WSAStartup(sockVersion, &data) != 0)
-//		{
-//			return;
-//		}
-//		if(!sclient){
-//			SOCKET sclient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-//					if(sclient == INVALID_SOCKET)
-//					{
-//						printf("invalid socket !");
-//						return;
-//					}
-//
-//					struct sockaddr_in serAddr;
-//					serAddr.sin_family = AF_INET;
-//					serAddr.sin_port = htons(5258);
-//					serAddr.sin_addr.S_un.S_addr = inet_addr("192.168.2.15");
-//					if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
-//					{
-//						printf("connect error !");
-//						closesocket(sclient);
-//						return;
-//					}
-//		}
 
 		char sendData[128];
 
@@ -120,6 +92,10 @@ void sendMsg(struct message msg){
 		int gatewayID = msg.gatewayID;
 		int rssi = msg.rssi;
 		int transmissionRange = msg.transmissionRange;
+		SYSTEMTIME time;
+		GetSystemTime(&time);
+		msg.second = time.wSecond;
+
 		//printf("rssi:%d",rssi);
 		memcpy(sendData+count,&gatewayID,sizeof(gatewayID));
 
@@ -127,9 +103,10 @@ void sendMsg(struct message msg){
 		memcpy(sendData+count,&rssi,sizeof(rssi));
 		count += sizeof(rssi);
 		memcpy(sendData+count,&transmissionRange,sizeof(transmissionRange));
-				count += sizeof(transmissionRange);
-
-
+		count += sizeof(transmissionRange);
+		memcpy(sendData+count,&msg.second,sizeof(msg.second));
+		count += sizeof(msg.second);
+		printf("count:%d\n",count);
 
 		int a = send(sclient, sendData, count, 0);
 		if (a == -1){
@@ -246,7 +223,7 @@ int main(int argc, char *argv[]) {
 			printf("Error reading message\n");
 			break;
 		}
-		printf("count:%d\n",count);
+
 
 //		if(count >= 110+6){
 //			//printf("finished\n");
@@ -272,9 +249,9 @@ int main(int argc, char *argv[]) {
 		printf("rssi value: %d",rssi);
 		msg.rssi = rssi;
 		msg.transmissionRange = 15;
-		printf("sending");
+		//printf("sending");
 		sendMsg(msg);
-		printf("end sending");
+		//printf("end sending");
 
 		//sleep(5);//
 	}
