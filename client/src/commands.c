@@ -572,11 +572,11 @@ void ble_evt_sm_smp_data(const struct ble_msg_sm_smp_data_evt_t *msg)
 void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg)
 {
 	//printf("[<] ble_evt_gap_scan_response\n");
-    int i;
+   // int i;
     //msg->
    // for(i=0;i<6;i++)
    //     printf("%02x%s",msg->sender.addr[5-i],i<5?":":"");
-    printf("%d\n",msg->rssi);
+    //printf("%d\n",msg->rssi);
     currentRSSI=msg->rssi;
 }
 

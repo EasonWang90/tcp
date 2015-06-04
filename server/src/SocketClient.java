@@ -9,10 +9,10 @@ public class SocketClient implements Runnable{
 	private DataInputStream in = null;
 	private DataOutputStream out = null;
 	private boolean running = true;
-	ServerSocket server;
-	int gatewayID;
-	Callback newPanel; 
-	int rssi;
+	private ServerSocket server;
+	private int gatewayID;
+	private Callback newPanel; 
+	private int rssi;
 	int transmissionRange;
 	
 	public SocketClient(Socket client, Callback panel){
@@ -49,8 +49,11 @@ public class SocketClient implements Runnable{
 		}
 	}
 	
-	public void sendMsg(String s){
+	public void startRead(char command){
+		command = '1';
 		
 	}
-	
+	public void stopRead(char command){
+		
+	}
 }

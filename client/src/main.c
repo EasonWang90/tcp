@@ -28,7 +28,7 @@
 #include <winsock2.h>
 #include "cmd_def.h"
 #include <time.h>
-
+extern int returnCurrentRSSI();
 volatile HANDLE serial_handle;
 SOCKET sclient;
 struct message{
@@ -83,6 +83,29 @@ int read_message() {
 void print_help() {
 	printf("\tUsage: bluegiga_scan_example\tCOM-port\n");
 }
+DWORD WINAPI SendRSSI(LPVOID Param){
+	int rssi = 0;
+	struct message msg;
+	msg.gatewayID = 3;
+	while(1){
+		if (read_message())
+			{
+				printf("Error reading message\n");
+				break;
+			}
+
+
+			rssi = returnCurrentRSSI();
+			printf("rssi value: %d\n",rssi);
+			msg.rssi = rssi;
+			msg.transmissionRange = 15;
+			//printf("sending");
+			sendMsg(msg);
+			//printf("end sending");
+	}
+
+	return 0;
+}
 
 void sendMsg(struct message msg){
 
@@ -117,15 +140,6 @@ void sendMsg(struct message msg){
 			printf("message sended to the server\n");
 		}
 
-//		char recData[255];
-//		int ret = recv(sclient, recData, 255, 0);
-//		if(ret > 0)
-//		{
-//			recData[ret] = 0x00;
-//			printf(recData);
-//		}
-
-
 }
 
 int main(int argc, char *argv[]) {
@@ -150,7 +164,7 @@ int main(int argc, char *argv[]) {
 					struct sockaddr_in serAddr;
 					serAddr.sin_family = AF_INET;
 					serAddr.sin_port = htons(5258);
-					serAddr.sin_addr.S_un.S_addr = inet_addr("137.149.212.73");
+					serAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
 					if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
 					{
 						printf("connect error !");
@@ -159,7 +173,6 @@ int main(int argc, char *argv[]) {
 					}
 		}
 
-	/* http://wiki.eclipse.org/CDT/User/FAQ#Eclipse_console_does_not_show_output_on_Windows */
 	setvbuf(stdout, NULL, _IONBF, 0);
 	setvbuf(stderr, NULL, _IONBF, 0);
 
@@ -207,53 +220,37 @@ int main(int argc, char *argv[]) {
 	printf("[>] ble_cmd_connection_get_status(0)\n");
 	ble_cmd_connection_get_status(0);
 	//ble_cmd_gap_set_scan_parameters(500000);
-	struct message msg;
-	msg.gatewayID = 3;
-	//setTimer();
 
-
+	printf("--------------------------------------------\n\n");
+	printf("waiting for server command!\n");
+	DWORD ThreadId;
+	HANDLE ThreadHandle;
 
 	/* Message loop */
-	int count = 0;
+
 	while (1)
 	{
-		int rssi = 0;
-		if (read_message())
+		char recData[255];
+		int ret = recv(sclient, recData, 255, 0);
+		if(ret > 0)
 		{
-			printf("Error reading message\n");
-			break;
+			if(recData[0] == '1'){
+				ThreadHandle = CreateThread(NULL,0,SendRSSI,NULL,0,&ThreadId);
+				if(ThreadHandle != NULL){
+					printf("create thread successful\n");
+				}
+				else{
+					printf("error create thread \n");
+				}
+			}
+			else if(recData[0] == '0'){
+				CloseHandle(ThreadHandle);
+			}
+			else{
+				printf("No command found!\n");
+			}
 		}
 
-
-//		if(count >= 110+6){
-//			//printf("finished\n");
-//			//break;
-//			char input;
-//			scanf("%c",&input);
-//			if(input == 'q'){
-//				if(sclient){
-//					closesocket(sclient);
-//					WSACleanup();
-//				}
-//
-//				exit(0);
-//			}
-//			if(input == 'c'){
-//				count = 0;
-//			}
-//		}
-		count++;
-
-
-		rssi = returnCurrentRSSI();
-		printf("rssi value: %d",rssi);
-		msg.rssi = rssi;
-		msg.transmissionRange = 15;
-		//printf("sending");
-		sendMsg(msg);
-		//printf("end sending");
-
-		//sleep(5);//
 	}
 
 	return 0;
