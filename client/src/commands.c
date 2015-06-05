@@ -24,7 +24,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <time.h>
+#include <windows.h>
 #include "cmd_def.h"
 int currentRSSI;
 int returnCurrentRSSI(){
@@ -572,16 +573,19 @@ void ble_evt_sm_smp_data(const struct ble_msg_sm_smp_data_evt_t *msg)
 void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg)
 {
 	//printf("[<] ble_evt_gap_scan_response\n");
-   // int i;
+    int i;
     //msg->
    // for(i=0;i<6;i++)
-   //     printf("%02x%s",msg->sender.addr[5-i],i<5?":":"");
-    //printf("%d\n",msg->rssi);
-	SYSTEMTIME time;
-	GetSystemTime(&time);
-			//msg.second = time.wSecond;
-	printf("The system time is: %02d:%02d\n:%d", time.wHour, time.wMinute,time.wMilliseconds);
-    currentRSSI=msg->rssi;
+     //   printf("%02x%s",msg->sender.addr[5-i],i<5?":":"");
+    if(msg->sender.addr[5] == 0x00 && msg->sender.addr[4] == 0x07){
+    	printf("\t%d\n",msg->rssi);
+    		SYSTEMTIME time;
+    		GetSystemTime(&time);
+    				//msg.second = time.wSecond;
+    		printf("\nThe system time is: %02d:%02d:%d\n", time.wMinute,time.wSecond,time.wMilliseconds);
+    	    currentRSSI=msg->rssi;
+    }
+
 }
 
 void ble_evt_gap_mode_changed(const struct ble_msg_gap_mode_changed_evt_t *msg)

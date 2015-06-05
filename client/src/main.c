@@ -157,31 +157,31 @@ int main(int argc, char *argv[]) {
 		 * create socket client
 		 *
 		 */
-	WORD sockVersion = MAKEWORD(2,2);
-		WSADATA data;
-		if(WSAStartup(sockVersion, &data) != 0)
-		{
-			return -1;
-		}
-		if(!sclient){
-			sclient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-					if(sclient == INVALID_SOCKET)
-					{
-						printf("invalid socket !");
-						return -1;
-					}
-
-					struct sockaddr_in serAddr;
-					serAddr.sin_family = AF_INET;
-					serAddr.sin_port = htons(5258);
-					serAddr.sin_addr.S_un.S_addr = inet_addr("137.149.212.73");
-					if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
-					{
-						printf("connect error !");
-						closesocket(sclient);
-						return -1;
-					}
-		}
+//	WORD sockVersion = MAKEWORD(2,2);
+//		WSADATA data;
+//		if(WSAStartup(sockVersion, &data) != 0)
+//		{
+//			return -1;
+//		}
+//		if(!sclient){
+//			sclient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+//					if(sclient == INVALID_SOCKET)
+//					{
+//						printf("invalid socket !");
+//						return -1;
+//					}
+//
+//					struct sockaddr_in serAddr;
+//					serAddr.sin_family = AF_INET;
+//					serAddr.sin_port = htons(5258);
+//					serAddr.sin_addr.S_un.S_addr = inet_addr("137.149.212.73");
+//					if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
+//					{
+//						printf("connect error !");
+//						closesocket(sclient);
+//						return -1;
+//					}
+//		}
 
 	/* http://wiki.eclipse.org/CDT/User/FAQ#Eclipse_console_does_not_show_output_on_Windows */
 	setvbuf(stdout, NULL, _IONBF, 0);
@@ -247,7 +247,7 @@ int main(int argc, char *argv[]) {
 			printf("Error reading message\n");
 			break;
 		}
-		printf("count:%d\n",count);
+		//printf("count:%d\n",count);
 
 //		if(count >= 110+6){
 //			//printf("finished\n");
@@ -270,7 +270,7 @@ int main(int argc, char *argv[]) {
 
 
 		rssi = returnCurrentRSSI();
-		printf("rssi value: %d",rssi);
+		//printf("rssi value: %d\n",rssi);
 		msg.rssi = rssi;
 		msg.transmissionRange = 15;
 		//printf("sending");
