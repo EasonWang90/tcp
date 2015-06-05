@@ -577,6 +577,10 @@ void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg
    // for(i=0;i<6;i++)
    //     printf("%02x%s",msg->sender.addr[5-i],i<5?":":"");
     //printf("%d\n",msg->rssi);
+	SYSTEMTIME time;
+	GetSystemTime(&time);
+			//msg.second = time.wSecond;
+	printf("The system time is: %02d:%02d\n:%d", time.wHour, time.wMinute,time.wMilliseconds);
     currentRSSI=msg->rssi;
 }
 
