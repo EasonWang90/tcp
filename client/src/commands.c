@@ -26,18 +26,73 @@
 #include <stdlib.h>
 #include <time.h>
 #include <windows.h>
+#include <winsock2.h>
 #include "cmd_def.h"
-int currentRSSI;
-int millisecond;
-int getSignal;
-int returnCurrentRSSI(){
-	return currentRSSI;
+struct message{
+	int gatewayID;
+	int rssi;
+	int timestamp;
+};
+SOCKET sclient;
+struct message messages;
+int connectServerSocket(){
+	/*
+			 * create socket client
+			 *
+			 */
+		WORD sockVersion = MAKEWORD(2,2);
+			WSADATA data;
+			if(WSAStartup(sockVersion, &data) != 0)
+			{
+				return -1;
+			}
+			if(!sclient){
+				sclient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+						if(sclient == INVALID_SOCKET)
+						{
+							printf("invalid socket !");
+							return -1;
+						}
+
+						struct sockaddr_in serAddr;
+						serAddr.sin_family = AF_INET;
+						serAddr.sin_port = htons(5258);
+						serAddr.sin_addr.S_un.S_addr = inet_addr("192.168.1.124");
+						if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
+						{
+							printf("connect error !");
+							closesocket(sclient);
+							return -1;
+						}
+			}
+			return 0;
 }
-int returnTimestamp(){
-	return millisecond;
-}
-int checkSignal(){
-	return getSignal;
+void sendMsg(struct message msg){
+
+		char sendData[128];
+
+		int count=0;
+		int gatewayID = msg.gatewayID;
+		int rssi = msg.rssi;
+	    int timestamp = msg.timestamp;
+		memcpy(sendData+count,&gatewayID,sizeof(gatewayID));
+
+		count += sizeof(gatewayID);
+		memcpy(sendData+count,&rssi,sizeof(rssi));
+		count += sizeof(rssi);
+		memcpy(sendData+count,&timestamp,sizeof(timestamp));
+				count += sizeof(timestamp);
+
+
+		//printf("count:%d ",count);
+		int a = send(sclient, sendData, count, 0);
+		if (a == -1){
+			perror("Error");
+			return;
+		}
+		else{
+			printf("message sent to the server\n");
+		}
 }
 void ble_default(const void*v)
 {
@@ -581,22 +636,22 @@ void ble_evt_sm_smp_data(const struct ble_msg_sm_smp_data_evt_t *msg)
 void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg)
 {
 	//printf("[<] ble_evt_gap_scan_response\n");
-    //int i;
     //msg->
-   // for(i=0;i<6;i++)
-     //   printf("%02x%s",msg->sender.addr[5-i],i<5?":":"");
-	getSignal = 0;
+
     if(msg->sender.addr[5] == 0x00 && msg->sender.addr[4] == 0x07){
-    	getSignal = 1;
+    	messages.gatewayID = 3;
+    	int i;
+    	for(i=0;i<6;i++)
+    	  printf("%02x%s",msg->sender.addr[5-i],i<5?":":"");
     	printf("\t%d\n",msg->rssi);
-    	time_t seconds;
-    	seconds = time (NULL);
+
     	SYSTEMTIME time;
     	GetSystemTime(&time);
-    	millisecond = ((time.wHour*60+time.wMinute)*60+time.wSecond)*1000+time.wMilliseconds;
-    	printf("Time stamp is %lu\n",millisecond);
+    	messages.timestamp = ((time.wHour*60+time.wMinute)*60+time.wSecond)*1000+time.wMilliseconds;
+    	printf("Time stamp is %lu\n",messages.timestamp);
     	//printf("\nThe system time is: %02d:%02d:%d\n", time.wMinute,time.wSecond,time.wMilliseconds);
-    	currentRSSI=msg->rssi;
+    	messages.rssi=msg->rssi;
+    	sendMsg(messages);
     }
 
 }

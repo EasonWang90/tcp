@@ -32,14 +32,7 @@
 
 volatile HANDLE serial_handle;
 SOCKET sclient;
-extern int returnCurrentRSSI();
-extern int returnTimestamp();
-extern int checkSignal();
-struct message{
-	int gatewayID;
-	int rssi;
-	int timestamp;
-};
+
 void output(uint8 len1, uint8* data1, uint16 len2, uint8* data2) {
 	DWORD written;
 
@@ -87,64 +80,12 @@ void print_help() {
 	printf("\tUsage: bluegiga_scan_example\tCOM-port\n");
 }
 
-void sendMsg(struct message msg){
 
-		char sendData[128];
-
-		int count=0;
-		int gatewayID = msg.gatewayID;
-		int rssi = msg.rssi;
-	    int timestamp = msg.timestamp;
-		memcpy(sendData+count,&gatewayID,sizeof(gatewayID));
-
-		count += sizeof(gatewayID);
-		memcpy(sendData+count,&rssi,sizeof(rssi));
-		count += sizeof(rssi);
-		memcpy(sendData+count,&timestamp,sizeof(timestamp));
-				count += sizeof(timestamp);
-
-
-		//printf("count:%d ",count);
-		int a = send(sclient, sendData, count, 0);
-		if (a == -1){
-			perror("Error");
-			return;
-		}
-		else{
-			printf("message sent to the server\n");
-		}
-}
 
 int main(int argc, char *argv[]) {
-	/*
-		 * create socket client
-		 *
-		 */
-	WORD sockVersion = MAKEWORD(2,2);
-		WSADATA data;
-		if(WSAStartup(sockVersion, &data) != 0)
-		{
-			return -1;
-		}
-		if(!sclient){
-			sclient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-					if(sclient == INVALID_SOCKET)
-					{
-						printf("invalid socket !");
-						return -1;
-					}
-
-					struct sockaddr_in serAddr;
-					serAddr.sin_family = AF_INET;
-					serAddr.sin_port = htons(5258);
-					serAddr.sin_addr.S_un.S_addr = inet_addr("192.168.1.124");
-					if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
-					{
-						printf("connect error !");
-						closesocket(sclient);
-						return -1;
-					}
-		}
+	if(connectServerSocket() == -1){
+		return -1;
+	}
 
 	/* http://wiki.eclipse.org/CDT/User/FAQ#Eclipse_console_does_not_show_output_on_Windows */
 	setvbuf(stdout, NULL, _IONBF, 0);
@@ -190,8 +131,7 @@ int main(int argc, char *argv[]) {
 	printf("[>] ble_cmd_connection_get_status(0)\n");
 	ble_cmd_connection_get_status(0);
 	//ble_cmd_gap_set_scan_parameters(500000);
-	struct message msg;
-	msg.gatewayID = 3;
+
 	//setTimer();
 
 	/* Message loop */
@@ -209,18 +149,6 @@ int main(int argc, char *argv[]) {
 					printf("Error reading message\n");
 					break;
 				}
-
-				rssi = returnCurrentRSSI();
-				//printf("rssi value: %d\n",rssi);
-				msg.rssi = rssi;
-				msg.timestamp = returnTimestamp();
-				//printf("sending");
-				if(rssi != 0 && checkSignal() == 1){
-					sendMsg(msg);
-				}
-
-				//printf("end sending");
-				//sleep(5);//
 			}
 	}
 
