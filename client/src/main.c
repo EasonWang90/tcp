@@ -34,6 +34,7 @@ volatile HANDLE serial_handle;
 SOCKET sclient;
 extern int returnCurrentRSSI();
 extern int returnTimestamp();
+extern int checkSignal();
 struct message{
 	int gatewayID;
 	int rssi;
@@ -103,7 +104,7 @@ void sendMsg(struct message msg){
 				count += sizeof(timestamp);
 
 
-		printf("count:%d ",count);
+		//printf("count:%d ",count);
 		int a = send(sclient, sendData, count, 0);
 		if (a == -1){
 			perror("Error");
@@ -136,7 +137,7 @@ int main(int argc, char *argv[]) {
 					struct sockaddr_in serAddr;
 					serAddr.sin_family = AF_INET;
 					serAddr.sin_port = htons(5258);
-					serAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+					serAddr.sin_addr.S_un.S_addr = inet_addr("192.168.1.124");
 					if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
 					{
 						printf("connect error !");
@@ -203,23 +204,22 @@ int main(int argc, char *argv[]) {
 		while (1)
 			{
 				int rssi = 0;
-				if (!read_message())
+				if (read_message())
 				{
-					rssi = returnCurrentRSSI();
-					//printf("rssi value: %d\n",rssi);
-					msg.rssi = rssi;
-					msg.timestamp = returnTimestamp();
-					//printf("sending");
-					if(rssi != 0){
-						sendMsg(msg);
-					}
-
-					//printf("end sending");
-				}
-				else{
 					printf("Error reading message\n");
 					break;
 				}
+
+				rssi = returnCurrentRSSI();
+				//printf("rssi value: %d\n",rssi);
+				msg.rssi = rssi;
+				msg.timestamp = returnTimestamp();
+				//printf("sending");
+				if(rssi != 0 && checkSignal() == 1){
+					sendMsg(msg);
+				}
+
+				//printf("end sending");
 				//sleep(5);//
 			}
 	}

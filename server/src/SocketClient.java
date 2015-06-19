@@ -50,9 +50,9 @@ public class SocketClient implements Runnable{
 		        int rssi = rssiByte[0];
 		        int timeStamp = getIntFromByteArray(timeByte);
 		        
-		        System.out.println("GatewayID: "+gatewayID);
-		        System.out.println("rssi: "+rssi);
-				System.out.println("Time stamp: "+timeStamp);
+//		        System.out.println("GatewayID: "+gatewayID);
+//		        System.out.println("rssi: "+rssi);
+//				System.out.println("Time stamp: "+timeStamp);
 				//newPanel.getMsg(gatewayID, rssi, transmissionRange);
 				ReceiveMsg newMsg = new ReceiveMsg(gatewayID, rssi, timeStamp);
 				if (gatewayID == 0) {

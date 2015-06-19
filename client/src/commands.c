@@ -29,11 +29,15 @@
 #include "cmd_def.h"
 int currentRSSI;
 int millisecond;
+int getSignal;
 int returnCurrentRSSI(){
 	return currentRSSI;
 }
 int returnTimestamp(){
 	return millisecond;
+}
+int checkSignal(){
+	return getSignal;
 }
 void ble_default(const void*v)
 {
@@ -581,7 +585,9 @@ void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg
     //msg->
    // for(i=0;i<6;i++)
      //   printf("%02x%s",msg->sender.addr[5-i],i<5?":":"");
+	getSignal = 0;
     if(msg->sender.addr[5] == 0x00 && msg->sender.addr[4] == 0x07){
+    	getSignal = 1;
     	printf("\t%d\n",msg->rssi);
     	time_t seconds;
     	seconds = time (NULL);
