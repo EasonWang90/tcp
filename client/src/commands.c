@@ -28,8 +28,12 @@
 #include <windows.h>
 #include "cmd_def.h"
 int currentRSSI;
+int millisecond;
 int returnCurrentRSSI(){
 	return currentRSSI;
+}
+int returnTimestamp(){
+	return millisecond;
 }
 void ble_default(const void*v)
 {
@@ -573,17 +577,20 @@ void ble_evt_sm_smp_data(const struct ble_msg_sm_smp_data_evt_t *msg)
 void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg)
 {
 	//printf("[<] ble_evt_gap_scan_response\n");
-    int i;
+    //int i;
     //msg->
    // for(i=0;i<6;i++)
      //   printf("%02x%s",msg->sender.addr[5-i],i<5?":":"");
     if(msg->sender.addr[5] == 0x00 && msg->sender.addr[4] == 0x07){
     	printf("\t%d\n",msg->rssi);
-    		SYSTEMTIME time;
-    		GetSystemTime(&time);
-    				//msg.second = time.wSecond;
-    		printf("\nThe system time is: %02d:%02d:%d\n", time.wMinute,time.wSecond,time.wMilliseconds);
-    	    currentRSSI=msg->rssi;
+    	time_t seconds;
+    	seconds = time (NULL);
+    	SYSTEMTIME time;
+    	GetSystemTime(&time);
+    	millisecond = ((time.wHour*60+time.wMinute)*60+time.wSecond)*1000+time.wMilliseconds;
+    	printf("Time stamp is %lu\n",millisecond);
+    	//printf("\nThe system time is: %02d:%02d:%d\n", time.wMinute,time.wSecond,time.wMilliseconds);
+    	currentRSSI=msg->rssi;
     }
 
 }

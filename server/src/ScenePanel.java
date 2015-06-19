@@ -6,6 +6,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.concurrent.ArrayBlockingQueue;
 
 
 public class ScenePanel extends JPanel implements Callback{
@@ -13,10 +16,13 @@ public class ScenePanel extends JPanel implements Callback{
 	final static double miniCeilLength = 0.1;
 	final static int areaLength = 20;
 	final static int areaWidth = 20;
+	final static int queueCapacity = 1000;
+	private long timeInterval = 3000;
+	private int transRange = 15;
 	ExperimentArea[] experimentAreas;
 	ExperimentArea finalIntersectArea;
+	private ArrayList<ArrayBlockingQueue<ReceiveMsg>> clients;
 	Gateway[] gateways;
-	int gateway, rssi, range;
 	int multiplyer = 30;
 	Ceil tag;
 	
@@ -32,18 +38,23 @@ public class ScenePanel extends JPanel implements Callback{
 				// init final area
 				finalIntersectArea = new ExperimentArea(miniCeilLength, areaLength, areaWidth);
 				finalIntersectArea.init();
-				Ceil[][] ceils = finalIntersectArea.getAreaCeils();
-				for (int i = 0; i < ceils.length; i++) {
-					for (int j = 0; j < ceils[i].length; j++) {
-							ceils[i][j].setContent(1);
-						
-					}
+//				Ceil[][] ceils = finalIntersectArea.getAreaCeils();
+//				for (int i = 0; i < ceils.length; i++) {
+//					for (int j = 0; j < ceils[i].length; j++) {
+//							ceils[i][j].setContent(1);
+//						
+//					}
+//				}
+//				
+				gateways = new Gateway[numOfGateways];
+				
+				clients = new ArrayList<ArrayBlockingQueue<ReceiveMsg>>();
+				for (int i = 0; i < numOfGateways; i++) {
+					ArrayBlockingQueue<ReceiveMsg> client = new ArrayBlockingQueue<ReceiveMsg>(queueCapacity);
+					clients.add(client);
 				}
 				
-				gateways = new Gateway[numOfGateways];
-				SocketServer newServer = new SocketServer(this);
-				System.out.println("Thread is alive: "
-		                + newServer.t.isAlive());
+				SocketServer newServer = new SocketServer(clients,this,timeInterval);
 				
 				// gateways initialization
 				setPreferredSize(new Dimension(20*multiplyer, 20*multiplyer));
@@ -108,40 +119,43 @@ public class ScenePanel extends JPanel implements Callback{
 	}
 
 	@Override
-	public void getMsg(int gateway, int rssi, int tranmissionRange) {
+	public void getMsg(int[] gateway) {
 		// TODO Auto-generated method stub
-		if (rssi != 0) {
-			gateways[0] = new Gateway(tranmissionRange, 0, 0);
-			gateways[1] = new Gateway(tranmissionRange, 20, 0);
-			gateways[2] = new Gateway(tranmissionRange, 0, 20);
-			gateways[3] = new Gateway(tranmissionRange, 20, 20);
-			experimentAreas[gateway] = gateways[gateway].getSignal(experimentAreas[gateway]);
+			System.out.println("Locate Object every 3s!");
 			/*
-			for (int i = 0; i < gateways.length; i++) {
-				if (tag.insideRangeOfGateway(gateways[i])) {
-					int getSignal = (int)(Math.random()*2);
-					System.out.println(getSignal);
-					if (getSignal == 1) {
-						experimentAreas[i] = gateways[i].getSignal(experimentAreas[i]);
-						System.out.println("Gateway "+i+ " get signal!");
-					}
-					else{
-						System.out.println("Gateway "+i+ " not get signal!");
-					}
+			 * reset 
+			 */
+			for (int i = 0; i < experimentAreas.length; i++) {
+				experimentAreas[i].reset();
+			}
+			finalIntersectArea.reset();
+//			Ceil[][] ceils = finalIntersectArea.getAreaCeils();
+//			for (int i = 0; i < ceils.length; i++) {
+//				for (int j = 0; j < ceils[i].length; j++) {
+//						ceils[i][j].setContent(1);
+//					
+//				}
+//			}
+			
+			gateways = new Gateway[numOfGateways];
+			
+			gateways[0] = new Gateway(this.transRange, 0, 0);
+			gateways[1] = new Gateway(this.transRange, 20, 0);
+			gateways[2] = new Gateway(this.transRange, 0, 20);
+			gateways[3] = new Gateway(this.transRange, 20, 20);
+			for (int i = 0; i < gateway.length; i++) {
+				if (gateway[i] == 1) {
+					System.out.println("gateway "+i+" get signal!");
+					experimentAreas[i] = gateways[i].getSignal(experimentAreas[i]);
 				}
-				
-				//experimentAreas[i].printExArea();
-				//System.out.println("--------------------------------");
-			}*/
-			
-			//ExperimentArea finalArea;
-			
+			}
 
 			for (int j = 0; j < gateways.length; j++) {
 				finalIntersectArea.andOperation(experimentAreas[j]);
 			}
-			repaint();
-		}
+			//finalIntersectArea.printExArea();
+			
+			this.repaint();
 		
 	}
 	

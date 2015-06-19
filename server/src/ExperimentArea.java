@@ -28,7 +28,14 @@ public class ExperimentArea {
 			minWidth += miniCeilLength;
 		}
 	}
-	
+	public void reset() {
+		for (int i = 0; i < areaCeils.length; i++) {
+			for (int j = 0; j < areaCeils[i].length; j++) {
+					areaCeils[i][j].setContent(1);
+				
+			}
+		}
+	}
 	public ExperimentArea andOperation(ExperimentArea otherarea){
 		Ceil[][] otherCeils = otherarea.getAreaCeils();
 		for (int i = 0; i < otherCeils.length; i++) {

@@ -1,4 +1,4 @@
 
 public interface Callback {
-	public void getMsg(int gateway, int rssi, int range);
+	public void getMsg(int[] gateway);
 }

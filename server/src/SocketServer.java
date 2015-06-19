@@ -2,20 +2,29 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.concurrent.ArrayBlockingQueue;
+
+import jdk.nashorn.internal.codegen.CompilerConstants.Call;
 
 
 public class SocketServer implements Runnable{
-	 ServerSocket server;
-	 int gatewayID;
-	 Callback newPanel; 
-	 int rssi;
-	 int transmissionRange;
-	 Thread t;
-	public SocketServer(ScenePanel panel) throws IOException{
-		newPanel = panel;
+	 private ServerSocket server;
+	 private ArrayList<SocketClient> clientList;
+	 private ArrayList<ArrayBlockingQueue<ReceiveMsg>> clients;
+	 private Callback callback;
+	 private long timedelay = 20;
+	 private long timeInterval;
+	public SocketServer(ArrayList<ArrayBlockingQueue<ReceiveMsg>> clients, Callback callback,long timeInterval) throws IOException{
+		clientList = new ArrayList<SocketClient>();
+		this.clients = clients;
+		this.callback = callback;
+		this.timeInterval = timeInterval;
 		System.out.println("Start server...");
 		server=new ServerSocket(5258);
-		t = new Thread(this, "abc");
+		Thread t = new Thread(this);
 		t.start();
 		System.out.println("server waiting..");
 	}
@@ -27,9 +36,24 @@ public class SocketServer implements Runnable{
 			try {
 				client=server.accept();
 				System.out.println("client accept");
-				SocketClient socketClient= new SocketClient(client, this.newPanel);
+				SocketClient socketClient= new SocketClient(client, clients);
 				Thread tt = new Thread(socketClient);
 				tt.start();
+				clientList.add(socketClient);
+				if(clientList.size() == 1){
+					Scanner scan = new Scanner(System.in);
+					System.out.println("Enter 1 to start all clients!");
+					int command = scan.nextInt();
+					if(command == 1){
+						for(SocketClient oneClient : clientList)
+					      oneClient.startReceive(command);
+						Timer time = new Timer();
+						time.schedule(new Task(clients,callback), timedelay, timeInterval);
+					}
+					else{
+						System.out.println("Did not find the command!");
+					}
+				}
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();

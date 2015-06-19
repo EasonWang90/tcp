@@ -32,10 +32,12 @@
 
 volatile HANDLE serial_handle;
 SOCKET sclient;
+extern int returnCurrentRSSI();
+extern int returnTimestamp();
 struct message{
 	int gatewayID;
 	int rssi;
-	int transmissionRange;
+	int timestamp;
 };
 void output(uint8 len1, uint8* data1, uint16 len2, uint8* data2) {
 	DWORD written;
@@ -85,71 +87,31 @@ void print_help() {
 }
 
 void sendMsg(struct message msg){
-//	/*
-//		 * create socket client
-//		 *
-//		 */
-//	WORD sockVersion = MAKEWORD(2,2);
-//		WSADATA data;
-//		if(WSAStartup(sockVersion, &data) != 0)
-//		{
-//			return;
-//		}
-//		if(!sclient){
-//			SOCKET sclient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-//					if(sclient == INVALID_SOCKET)
-//					{
-//						printf("invalid socket !");
-//						return;
-//					}
-//
-//					struct sockaddr_in serAddr;
-//					serAddr.sin_family = AF_INET;
-//					serAddr.sin_port = htons(5258);
-//					serAddr.sin_addr.S_un.S_addr = inet_addr("192.168.2.15");
-//					if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
-//					{
-//						printf("connect error !");
-//						closesocket(sclient);
-//						return;
-//					}
-//		}
 
 		char sendData[128];
 
 		int count=0;
 		int gatewayID = msg.gatewayID;
 		int rssi = msg.rssi;
-		int transmissionRange = msg.transmissionRange;
-		//printf("rssi:%d",rssi);
+	    int timestamp = msg.timestamp;
 		memcpy(sendData+count,&gatewayID,sizeof(gatewayID));
 
 		count += sizeof(gatewayID);
 		memcpy(sendData+count,&rssi,sizeof(rssi));
 		count += sizeof(rssi);
-		memcpy(sendData+count,&transmissionRange,sizeof(transmissionRange));
-				count += sizeof(transmissionRange);
+		memcpy(sendData+count,&timestamp,sizeof(timestamp));
+				count += sizeof(timestamp);
 
 
-
+		printf("count:%d ",count);
 		int a = send(sclient, sendData, count, 0);
 		if (a == -1){
 			perror("Error");
 			return;
 		}
 		else{
-			printf("message sended to the server\n");
+			printf("message sent to the server\n");
 		}
-
-//		char recData[255];
-//		int ret = recv(sclient, recData, 255, 0);
-//		if(ret > 0)
-//		{
-//			recData[ret] = 0x00;
-//			printf(recData);
-//		}
-
-
 }
 
 int main(int argc, char *argv[]) {
@@ -157,31 +119,31 @@ int main(int argc, char *argv[]) {
 		 * create socket client
 		 *
 		 */
-//	WORD sockVersion = MAKEWORD(2,2);
-//		WSADATA data;
-//		if(WSAStartup(sockVersion, &data) != 0)
-//		{
-//			return -1;
-//		}
-//		if(!sclient){
-//			sclient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-//					if(sclient == INVALID_SOCKET)
-//					{
-//						printf("invalid socket !");
-//						return -1;
-//					}
-//
-//					struct sockaddr_in serAddr;
-//					serAddr.sin_family = AF_INET;
-//					serAddr.sin_port = htons(5258);
-//					serAddr.sin_addr.S_un.S_addr = inet_addr("137.149.212.73");
-//					if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
-//					{
-//						printf("connect error !");
-//						closesocket(sclient);
-//						return -1;
-//					}
-//		}
+	WORD sockVersion = MAKEWORD(2,2);
+		WSADATA data;
+		if(WSAStartup(sockVersion, &data) != 0)
+		{
+			return -1;
+		}
+		if(!sclient){
+			sclient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+					if(sclient == INVALID_SOCKET)
+					{
+						printf("invalid socket !");
+						return -1;
+					}
+
+					struct sockaddr_in serAddr;
+					serAddr.sin_family = AF_INET;
+					serAddr.sin_port = htons(5258);
+					serAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+					if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
+					{
+						printf("connect error !");
+						closesocket(sclient);
+						return -1;
+					}
+		}
 
 	/* http://wiki.eclipse.org/CDT/User/FAQ#Eclipse_console_does_not_show_output_on_Windows */
 	setvbuf(stdout, NULL, _IONBF, 0);
@@ -222,10 +184,6 @@ int main(int argc, char *argv[]) {
 
 	bglib_output = output;
 
-	/* stop previous operation */
-	//printf();
-	//ble_cmd_system_hello();
-
 	printf("[>] ble_cmd_gap_end_procedure()\n");
 	ble_cmd_gap_end_procedure();
 	printf("[>] ble_cmd_connection_get_status(0)\n");
@@ -235,50 +193,37 @@ int main(int argc, char *argv[]) {
 	msg.gatewayID = 3;
 	//setTimer();
 
-
-
 	/* Message loop */
-	int count = 0;
-	while (1)
+	printf("Waiting for server command!\n");
+	char recData[255];
+	int ret = recv(sclient, recData, 255, 0);
+	if(ret > 0)
 	{
-		int rssi = 0;
-		if (read_message())
-		{
-			printf("Error reading message\n");
-			break;
-		}
-		//printf("count:%d\n",count);
+		printf("Got the message!\n");
+		while (1)
+			{
+				int rssi = 0;
+				if (!read_message())
+				{
+					rssi = returnCurrentRSSI();
+					//printf("rssi value: %d\n",rssi);
+					msg.rssi = rssi;
+					msg.timestamp = returnTimestamp();
+					//printf("sending");
+					if(rssi != 0){
+						sendMsg(msg);
+					}
 
-//		if(count >= 110+6){
-//			//printf("finished\n");
-//			//break;
-//			char input;
-//			scanf("%c",&input);
-//			if(input == 'q'){
-//				if(sclient){
-//					closesocket(sclient);
-//					WSACleanup();
-//				}
-//
-//				exit(0);
-//			}
-//			if(input == 'c'){
-//				count = 0;
-//			}
-//		}
-		count++;
-
-
-		rssi = returnCurrentRSSI();
-		//printf("rssi value: %d\n",rssi);
-		msg.rssi = rssi;
-		msg.transmissionRange = 15;
-		//printf("sending");
-		//sendMsg(msg);
-		//printf("end sending");
-
-		//sleep(5);//
+					//printf("end sending");
+				}
+				else{
+					printf("Error reading message\n");
+					break;
+				}
+				//sleep(5);//
+			}
 	}
+
 
 	return 0;
 }
