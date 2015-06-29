@@ -7,29 +7,32 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.concurrent.ArrayBlockingQueue;
 
 
 public class ScenePanel extends JPanel implements Callback{
-	final static int numOfGateways = 4;
-	final static double miniCeilLength = 0.1;
-	final static int areaLength = 20;
-	final static int areaWidth = 20;
+	final static int numOfGateways = 3;
+	private double miniCeilLength = 0.05;
+	private int numOfBlockArea = 1;
+	private int areaLength = 5;
+	private int areaWidth = 5;
 	final static int queueCapacity = 1000;
 	private long timeInterval = 3000;
-	private int transRange = 15;
+	private int transRange = 3;
 	ExperimentArea[] experimentAreas;
 	ExperimentArea finalIntersectArea;
 	private ArrayList<ArrayBlockingQueue<ReceiveMsg>> clients;
 	Gateway[] gateways;
-	int multiplyer = 30;
+	BlockingArea[] blockAreas;
+	int multiplyer = 150;
 	Ceil tag;
 	
 
 	public ScenePanel() throws IOException{
 		// experiment area initialization
-				
+				//readUserInput();
 				experimentAreas = new ExperimentArea[numOfGateways];
 				for (int i = 0; i < experimentAreas.length; i++) {
 					experimentAreas[i] = new ExperimentArea(miniCeilLength, areaLength, areaWidth);
@@ -38,14 +41,16 @@ public class ScenePanel extends JPanel implements Callback{
 				// init final area
 				finalIntersectArea = new ExperimentArea(miniCeilLength, areaLength, areaWidth);
 				finalIntersectArea.init();
-//				Ceil[][] ceils = finalIntersectArea.getAreaCeils();
-//				for (int i = 0; i < ceils.length; i++) {
-//					for (int j = 0; j < ceils[i].length; j++) {
-//							ceils[i][j].setContent(1);
-//						
-//					}
-//				}
-//				
+				
+				/*
+				 * set blocking area
+				 */
+				double blockLength = 2, blockWidth = 1;
+				int originalX = 0, originalY = 4;
+				blockAreas = new BlockingArea[numOfBlockArea];
+				blockAreas[0] = new BlockingArea(blockLength, blockWidth, originalX, originalY);
+				finalIntersectArea.intersectWithBlockAreas(blockAreas);
+				
 				gateways = new Gateway[numOfGateways];
 				
 				clients = new ArrayList<ArrayBlockingQueue<ReceiveMsg>>();
@@ -57,7 +62,7 @@ public class ScenePanel extends JPanel implements Callback{
 				SocketServer newServer = new SocketServer(clients,this,timeInterval);
 				
 				// gateways initialization
-				setPreferredSize(new Dimension(20*multiplyer, 20*multiplyer));
+				setPreferredSize(new Dimension(areaLength*multiplyer, areaWidth*multiplyer));
 				
 		
 		
@@ -66,15 +71,19 @@ public class ScenePanel extends JPanel implements Callback{
 	public void paintComponent(Graphics page) { // we assume transmission range change from large to small
 		super.paintComponent(page);
 		
+		Color customColor = new Color(0, 102, 204, 100);
 		Ceil[][] interCeils = finalIntersectArea.getAreaCeils();
 		for (int i = 0; i < interCeils.length; i++) {
 			for (int j = 0; j < interCeils[i].length; j++) {
 				if (interCeils[i][j].getContent() == 1) {
-					drawCeil(page, interCeils[i][j]);
+					drawCeil(page, interCeils[i][j],customColor);
 				}
-				
+				if (interCeils[i][j].getContent() == -1) {
+					drawCeil(page, interCeils[i][j],Color.gray);
+				}
 			}
 		}
+
 		try {
 			drawGateways(page, gateways, Color.black);
 		} catch (Exception e) {
@@ -87,13 +96,27 @@ public class ScenePanel extends JPanel implements Callback{
 		
 	}
 	
-	public void drawCeil(Graphics page, Ceil ceil) {
+	public void readUserInput() {
+		Scanner scanner = new Scanner(System.in);
+		System.out.println("Please enter the width of testing area(meter) (eg. 20): ");
+		this.areaWidth = scanner.nextInt();
+		System.out.println("Please enter the length of testing area(meter) (eg. 20): ");
+		this.areaLength = scanner.nextInt();
+		System.out.println("Please enter matrix precision of testing area(meter) (eg. 0.1): ");
+		this.miniCeilLength = scanner.nextDouble();
+		System.out.println("Please enter the update frequency(ms) (eg. 3000): ");
+		this.timeInterval = scanner.nextLong();
+		System.out.println("Please enter the transmission range of the tag(meter) (eg. 15): ");
+		this.transRange = scanner.nextInt();
+	}
+	
+	public void drawCeil(Graphics page, Ceil ceil, Color color) {
 		Graphics2D page2d = (Graphics2D)page;
 		double x = (ceil.getCenterOfCeilX() - ceil.getEdgeLength()/2)*multiplyer;
 		double y = (ceil.getCenterOfCeilY() - ceil.getEdgeLength()/2)*multiplyer;
 		double edge = ceil.getEdgeLength()*multiplyer;
 		Rectangle2D.Double ceilShape = new Rectangle2D.Double(x, y, edge, edge);
-		page2d.setColor(Color.blue);
+		page2d.setColor(color);
 		page2d.fill(ceilShape);
 	}
 	
@@ -108,7 +131,15 @@ public class ScenePanel extends JPanel implements Callback{
 				page.setColor(color);
 			}
 			
-			page.drawOval(current.getX()*multiplyer-current.getRadius()*multiplyer, current.getY()*multiplyer-current.getRadius()*multiplyer, 2*current.getRadius()*multiplyer, 2*current.getRadius()*multiplyer);
+			//page.drawOval((int)(current.getX()*multiplyer-current.getRadius()*multiplyer), (int)(current.getY()*multiplyer-current.getRadius()*multiplyer), (int)(2*current.getRadius()*multiplyer), (int)(2*current.getRadius()*multiplyer));
+			page.setColor(Color.GREEN);
+			int r = 30;
+			int gatewayX = (int)(current.getX()*multiplyer);
+			int gatewayY = (int)(current.getY()*multiplyer);
+			//System.out.println(gatewayX+","+gatewayY);
+			gatewayX = gatewayX - ( r / 2);
+			gatewayY = gatewayY - ( r / 2);
+			page.fillOval(gatewayX, gatewayY, r, r);
 		}
 	}
 	public void locateTagOnScreen(Graphics page) {
@@ -140,9 +171,9 @@ public class ScenePanel extends JPanel implements Callback{
 			gateways = new Gateway[numOfGateways];
 			
 			gateways[0] = new Gateway(this.transRange, 0, 0);
-			gateways[1] = new Gateway(this.transRange, 20, 0);
-			gateways[2] = new Gateway(this.transRange, 0, 20);
-			gateways[3] = new Gateway(this.transRange, 20, 20);
+			gateways[1] = new Gateway(this.transRange, 5, 0);
+			gateways[2] = new Gateway(this.transRange, 5, 5);
+			//gateways[3] = new Gateway(this.transRange, 20, 20);
 			for (int i = 0; i < gateway.length; i++) {
 				if (gateway[i] == 1) {
 					System.out.println("gateway "+i+" get signal!");
@@ -153,6 +184,7 @@ public class ScenePanel extends JPanel implements Callback{
 			for (int j = 0; j < gateways.length; j++) {
 				finalIntersectArea.andOperation(experimentAreas[j]);
 			}
+			finalIntersectArea.intersectWithBlockAreas(blockAreas);
 			//finalIntersectArea.printExArea();
 			
 			this.repaint();

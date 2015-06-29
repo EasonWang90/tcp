@@ -48,7 +48,7 @@ public class SocketServer implements Runnable{
 						for(SocketClient oneClient : clientList)
 					      oneClient.startReceive(command);
 						Timer time = new Timer();
-						time.schedule(new Task(clients,callback), timedelay, timeInterval);
+						time.schedule(new Task(clients,callback,timeInterval), timedelay, timeInterval);
 					}
 					else{
 						System.out.println("Did not find the command!");
@@ -58,7 +58,7 @@ public class SocketServer implements Runnable{
 				// TODO: handle exception
 				e.printStackTrace();
 			}
-	
+	 
 			
 		}
 	}

@@ -1,11 +1,11 @@
 
 public class Gateway {
-	private int radius,x,y;
+	private double radius,x,y;
 
-	public Gateway(int rad, int centreX, int centreY){
-		radius=rad;
-		x=centreX;
-		y=centreY;
+	public Gateway(double rad, double centreX, double centreY){
+		this.radius=rad;
+		this.x=centreX;
+		this.y=centreY;
 	}
 	
 	public ExperimentArea getSignal(ExperimentArea area){
@@ -13,8 +13,8 @@ public class Gateway {
 		Ceil[][] ceils = currentArea.getAreaCeils();
 		for (int i = 0; i < ceils.length; i++) {
 			for (int j = 0; j < ceils[i].length; j++) {
-				if (!ceils[i][j].insideRangeOfGateway(this)) {
-					ceils[i][j].setContent(0);
+				if (ceils[i][j].insideRangeOfGateway(this)) {
+					ceils[i][j].setContent(1);
 				}
 			}
 		}
@@ -32,26 +32,32 @@ public class Gateway {
 		}
 		return currentArea;
 	}
-	
-	
-	public int getRadius() {
+
+	public double getRadius() {
 		return radius;
 	}
-	public void setRadius(int radius) {
+
+	public void setRadius(double radius) {
 		this.radius = radius;
 	}
-	public int getX() {
+
+	public double getX() {
 		return x;
 	}
-	public int getY() {
-		return y;
-	}
-	public void setX(int x) {
+
+	public void setX(double x) {
 		this.x = x;
 	}
-	public void setY(int y) {
+
+	public double getY() {
+		return y;
+	}
+
+	public void setY(double y) {
 		this.y = y;
 	}
+	
+
 	
 	
 	

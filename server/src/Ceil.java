@@ -3,7 +3,7 @@ public class Ceil {
 	private double edgeLength;
 	private double centerOfCeilX;
 	private double centerOfCeilY;
-	private int content = 1;
+	private int content = 0;
 	
 	public int getContent() {
 		return content;
@@ -27,15 +27,26 @@ public class Ceil {
 		this.centerOfCeilY = 0.0;
 	}
 	public boolean insideRangeOfGateway(Gateway gateway){
-		int temp = (int)Math.pow(centerOfCeilX-gateway.getX(), 2) + (int)Math.pow(centerOfCeilY-gateway.getY(), 2);
-		if (temp <= (int)Math.pow(gateway.getRadius(), 2)) {
+		double temp = Math.pow(centerOfCeilX-gateway.getX(), 2) + Math.pow(centerOfCeilY-gateway.getY(), 2);
+		if (temp <= Math.pow(gateway.getRadius(), 2)) {
 			return true;
 		}
 		else{
 			return false;
 		}
 	}
-	
+	public boolean insideRangeOfBlcokingArea(BlockingArea blockingArea) {
+		int x = blockingArea.getOriginalx();
+		int y = blockingArea.getOriginaly();
+		double length = blockingArea.getAreaLength();
+		double width = blockingArea.getAreaWidth();
+		if (centerOfCeilX >= x && centerOfCeilX <= x + length && centerOfCeilY >= y && centerOfCeilY <= y + width) {
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
 	public static Ceil generateLoc(int width, int height) {
 		int x = (int)(Math.random()*width);
 		int y = (int)(Math.random()*height);

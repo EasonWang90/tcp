@@ -1,9 +1,9 @@
 
 public class ExperimentArea {
-	private Ceil[][] areaCeils;
-	private double miniCeilLength;
-	private int areaLength;
-	private int areaWidth;
+	protected Ceil[][] areaCeils;
+	protected double miniCeilLength;
+	protected int areaLength;
+	protected int areaWidth;
 	
 	public ExperimentArea(double miniCeilLength, int areaLength, int areaWidth){
 		this.miniCeilLength = miniCeilLength;
@@ -31,7 +31,7 @@ public class ExperimentArea {
 	public void reset() {
 		for (int i = 0; i < areaCeils.length; i++) {
 			for (int j = 0; j < areaCeils[i].length; j++) {
-					areaCeils[i][j].setContent(1);
+					areaCeils[i][j].setContent(0);
 				
 			}
 		}
@@ -40,8 +40,20 @@ public class ExperimentArea {
 		Ceil[][] otherCeils = otherarea.getAreaCeils();
 		for (int i = 0; i < otherCeils.length; i++) {
 			for (int j = 0; j < otherCeils[i].length; j++) {
-				if (this.areaCeils[i][j].getContent() == 1 && otherCeils[i][j].getContent() == 0) {
-					this.areaCeils[i][j].setContent(0);
+				if (this.areaCeils[i][j].getContent() == 0 && otherCeils[i][j].getContent() == 1) {
+					this.areaCeils[i][j].setContent(1);
+				}
+			}
+		}
+		return this;
+	}
+	public ExperimentArea intersectWithBlockAreas(BlockingArea[] blockingAreas) {
+		for (int a = 0; a < blockingAreas.length; a++) {
+			for (int i = 0; i < this.areaCeils.length; i++) {
+				for (int j = 0; j < this.areaCeils[i].length; j++) {
+					if (this.areaCeils[i][j].insideRangeOfBlcokingArea(blockingAreas[a])) {
+						this.areaCeils[i][j].setContent(-1);
+					}
 				}
 			}
 		}

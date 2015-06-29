@@ -57,7 +57,7 @@ int connectServerSocket(){
 						struct sockaddr_in serAddr;
 						serAddr.sin_family = AF_INET;
 						serAddr.sin_port = htons(5258);
-						serAddr.sin_addr.S_un.S_addr = inet_addr("192.168.1.124");
+						serAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
 						if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
 						{
 							printf("connect error !");
@@ -639,19 +639,26 @@ void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg
     //msg->
 
     if(msg->sender.addr[5] == 0x00 && msg->sender.addr[4] == 0x07){
-    	messages.gatewayID = 3;
+    	messages.gatewayID = 1;
     	int i;
     	for(i=0;i<6;i++)
     	  printf("%02x%s",msg->sender.addr[5-i],i<5?":":"");
     	printf("\t%d\n",msg->rssi);
 
     	SYSTEMTIME time;
-    	GetSystemTime(&time);
+    	GetLocalTime(&time);
     	messages.timestamp = ((time.wHour*60+time.wMinute)*60+time.wSecond)*1000+time.wMilliseconds;
+    	printf("Time:%d:%d:%d.%d\n",time.wHour,time.wMinute,time.wSecond,time.wMilliseconds);
     	printf("Time stamp is %lu\n",messages.timestamp);
     	//printf("\nThe system time is: %02d:%02d:%d\n", time.wMinute,time.wSecond,time.wMilliseconds);
     	messages.rssi=msg->rssi;
-    	sendMsg(messages);
+    	if(sclient){
+    		sendMsg(messages);
+    	}
+    	else{
+    		printf("stop\n");
+    	}
+
     }
 
 }
