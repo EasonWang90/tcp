@@ -15,11 +15,11 @@ public class Scene {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		BufferedImage img = null;
 		try {
-		    img = ImageIO.read(new File("floorPlan.jpg"));
+		    img = ImageIO.read(new File("floorPlan202.jpg"));
 		} catch (IOException e) {
 		    e.printStackTrace();
 		}
-		Image dimg = img.getScaledInstance(750, 750, Image.SCALE_SMOOTH);
+		Image dimg = img.getScaledInstance(1100, 650, Image.SCALE_SMOOTH);
 		ImageIcon imageIcon = new ImageIcon(dimg);
 		JLabel label = new JLabel(imageIcon);
 		frame.setContentPane(label);

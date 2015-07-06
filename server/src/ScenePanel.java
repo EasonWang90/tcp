@@ -13,20 +13,20 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 
 public class ScenePanel extends JPanel implements Callback{
-	final static int numOfGateways = 3;
-	private double miniCeilLength = 0.05;
-	private int numOfBlockArea = 1;
-	private int areaLength = 5;
-	private int areaWidth = 5;
+	final static int numOfGateways = 4;
+	private double miniCeilLength = 0.02;
+	private int numOfBlockArea = 2;
+	private double areaLength = 11;
+	private double areaWidth = 6.5;
 	final static int queueCapacity = 1000;
-	private long timeInterval = 3000;
-	private int transRange = 3;
+	private long timeInterval = 2000;
+	private double transRange = 4.5;
 	ExperimentArea[] experimentAreas;
 	ExperimentArea finalIntersectArea;
 	private ArrayList<ArrayBlockingQueue<ReceiveMsg>> clients;
 	Gateway[] gateways;
 	BlockingArea[] blockAreas;
-	int multiplyer = 150;
+	int multiplyer = 100;
 	Ceil tag;
 	
 
@@ -45,12 +45,18 @@ public class ScenePanel extends JPanel implements Callback{
 				/*
 				 * set blocking area
 				 */
-				double blockLength = 2, blockWidth = 1;
-				int originalX = 0, originalY = 4;
+				double blockLength = 0.7, blockWidth = 1.3;
+				double originalX = 1, originalY = 2.4;
 				blockAreas = new BlockingArea[numOfBlockArea];
 				blockAreas[0] = new BlockingArea(blockLength, blockWidth, originalX, originalY);
+				blockLength = 0.2; 
+				blockWidth = 0.2;
+				originalX = 7.6;
+				originalY = 3;
+				blockAreas[1] = new BlockingArea(blockLength, blockWidth, originalX, originalY);
 				finalIntersectArea.intersectWithBlockAreas(blockAreas);
-				
+				//finalIntersectArea.printExArea();
+				finalIntersectArea.noSignal();
 				gateways = new Gateway[numOfGateways];
 				
 				clients = new ArrayList<ArrayBlockingQueue<ReceiveMsg>>();
@@ -62,7 +68,7 @@ public class ScenePanel extends JPanel implements Callback{
 				SocketServer newServer = new SocketServer(clients,this,timeInterval);
 				
 				// gateways initialization
-				setPreferredSize(new Dimension(areaLength*multiplyer, areaWidth*multiplyer));
+				setPreferredSize(new Dimension((int)(areaLength*multiplyer), (int)(areaWidth*multiplyer)));
 				
 		
 		
@@ -79,7 +85,7 @@ public class ScenePanel extends JPanel implements Callback{
 					drawCeil(page, interCeils[i][j],customColor);
 				}
 				if (interCeils[i][j].getContent() == -1) {
-					drawCeil(page, interCeils[i][j],Color.gray);
+					drawCeil(page, interCeils[i][j],Color.GRAY);
 				}
 			}
 		}
@@ -152,6 +158,7 @@ public class ScenePanel extends JPanel implements Callback{
 	@Override
 	public void getMsg(int[] gateway) {
 		// TODO Auto-generated method stub
+			boolean totallyNoSignal = true;
 			System.out.println("Locate Object every 3s!");
 			/*
 			 * reset 
@@ -160,33 +167,30 @@ public class ScenePanel extends JPanel implements Callback{
 				experimentAreas[i].reset();
 			}
 			finalIntersectArea.reset();
-//			Ceil[][] ceils = finalIntersectArea.getAreaCeils();
-//			for (int i = 0; i < ceils.length; i++) {
-//				for (int j = 0; j < ceils[i].length; j++) {
-//						ceils[i][j].setContent(1);
-//					
-//				}
-//			}
 			
 			gateways = new Gateway[numOfGateways];
 			
-			gateways[0] = new Gateway(this.transRange, 0, 0);
-			gateways[1] = new Gateway(this.transRange, 5, 0);
-			gateways[2] = new Gateway(this.transRange, 5, 5);
-			//gateways[3] = new Gateway(this.transRange, 20, 20);
+			gateways[0] = new Gateway(this.transRange, 1.6, 0.3);
+			gateways[1] = new Gateway(this.transRange, 7.5, 0.3);
+			gateways[2] = new Gateway(this.transRange, 7.5, 6.2);
+			gateways[3] = new Gateway(this.transRange, 1.6, 6.2);
+			
 			for (int i = 0; i < gateway.length; i++) {
 				if (gateway[i] == 1) {
 					System.out.println("gateway "+i+" get signal!");
 					experimentAreas[i] = gateways[i].getSignal(experimentAreas[i]);
+					totallyNoSignal = false;
 				}
 			}
-
 			for (int j = 0; j < gateways.length; j++) {
 				finalIntersectArea.andOperation(experimentAreas[j]);
 			}
-			finalIntersectArea.intersectWithBlockAreas(blockAreas);
-			//finalIntersectArea.printExArea();
 			
+			if(totallyNoSignal == true){
+				finalIntersectArea.noSignal();
+			}
+			//finalIntersectArea.printExArea();
+			finalIntersectArea.intersectWithBlockAreas(blockAreas);
 			this.repaint();
 		
 	}

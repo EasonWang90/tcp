@@ -3,7 +3,7 @@ public class Ceil {
 	private double edgeLength;
 	private double centerOfCeilX;
 	private double centerOfCeilY;
-	private int content = 0;
+	private int content = 1;
 	
 	public int getContent() {
 		return content;
@@ -36,8 +36,8 @@ public class Ceil {
 		}
 	}
 	public boolean insideRangeOfBlcokingArea(BlockingArea blockingArea) {
-		int x = blockingArea.getOriginalx();
-		int y = blockingArea.getOriginaly();
+		double x = blockingArea.getOriginalx();
+		double y = blockingArea.getOriginaly();
 		double length = blockingArea.getAreaLength();
 		double width = blockingArea.getAreaWidth();
 		if (centerOfCeilX >= x && centerOfCeilX <= x + length && centerOfCeilY >= y && centerOfCeilY <= y + width) {

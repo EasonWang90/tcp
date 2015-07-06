@@ -1,10 +1,10 @@
 
 public class BlockingArea{
-	private int originalx;
-	private int originaly;
+	private double originalx;
+	private double originaly;
 	private double areaLength;
 	private double areaWidth;
-	public BlockingArea(double areaLength, double areaWidth, int x, int y){
+	public BlockingArea(double areaLength, double areaWidth, double x, double y){
 		this.areaLength = areaLength;
 		this.areaWidth = areaWidth;
 		this.originalx = x;
@@ -27,13 +27,13 @@ public class BlockingArea{
 		this.areaWidth = areaWidth;
 	}
 
-	public int getOriginalx() {
+	public double getOriginalx() {
 		return originalx;
 	}
 	public void setOriginalx(int originalx) {
 		this.originalx = originalx;
 	}
-	public int getOriginaly() {
+	public double getOriginaly() {
 		return originaly;
 	}
 	public void setOriginaly(int originaly) {

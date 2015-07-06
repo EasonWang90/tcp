@@ -13,25 +13,25 @@ public class Gateway {
 		Ceil[][] ceils = currentArea.getAreaCeils();
 		for (int i = 0; i < ceils.length; i++) {
 			for (int j = 0; j < ceils[i].length; j++) {
-				if (ceils[i][j].insideRangeOfGateway(this)) {
-					ceils[i][j].setContent(1);
-				}
-			}
-		}
-		return currentArea;
-	}
-	public ExperimentArea notGetSignal(ExperimentArea area){
-		ExperimentArea currentArea = area;
-		Ceil[][] ceils = currentArea.getAreaCeils();
-		for (int i = 0; i < ceils.length; i++) {
-			for (int j = 0; j < ceils[i].length; j++) {
 				if (!ceils[i][j].insideRangeOfGateway(this)) {
-					ceils[i][j].setContent(1);
+					ceils[i][j].setContent(0);
 				}
 			}
 		}
 		return currentArea;
 	}
+//	public ExperimentArea notGetSignal(ExperimentArea area){
+//		ExperimentArea currentArea = area;
+//		Ceil[][] ceils = currentArea.getAreaCeils();
+//		for (int i = 0; i < ceils.length; i++) {
+//			for (int j = 0; j < ceils[i].length; j++) {
+//				if (!ceils[i][j].insideRangeOfGateway(this)) {
+//					ceils[i][j].setContent(1);
+//				}
+//			}
+//		}
+//		return currentArea;
+//	}
 
 	public double getRadius() {
 		return radius;

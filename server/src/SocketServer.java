@@ -40,7 +40,7 @@ public class SocketServer implements Runnable{
 				Thread tt = new Thread(socketClient);
 				tt.start();
 				clientList.add(socketClient);
-				if(clientList.size() == 1){
+				if(clientList.size() == 4){
 					Scanner scan = new Scanner(System.in);
 					System.out.println("Enter 1 to start all clients!");
 					int command = scan.nextInt();
