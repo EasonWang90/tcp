@@ -40,19 +40,24 @@ public class SocketServer implements Runnable{
 				Thread tt = new Thread(socketClient);
 				tt.start();
 				clientList.add(socketClient);
-				if(clientList.size() == 4){
-					Scanner scan = new Scanner(System.in);
-					System.out.println("Enter 1 to start all clients!");
-					int command = scan.nextInt();
-					if(command == 1){
-						for(SocketClient oneClient : clientList)
-					      oneClient.startReceive(command);
-						Timer time = new Timer();
-						time.schedule(new Task(clients,callback,timeInterval), timedelay, timeInterval);
+				if(clientList.size() == 4){ // number of accepted clients, start all clients at the same time
+					boolean sign = true;
+					while (sign) {
+						Scanner scan = new Scanner(System.in);
+						System.out.println("Enter 1 to start all clients!");
+						String command = scan.next();
+						if(command.equals("1")){
+							for(SocketClient oneClient : clientList)
+						      oneClient.startReceive(command);
+							Timer time = new Timer();
+							time.schedule(new Task(clients,callback,timeInterval), timedelay, timeInterval);
+							sign = false;
+						}
+						else{
+							System.out.println("Did not find the command!");
+						}
 					}
-					else{
-						System.out.println("Did not find the command!");
-					}
+					
 				}
 			} catch (Exception e) {
 				// TODO: handle exception

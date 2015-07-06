@@ -78,8 +78,8 @@ public class SocketClient implements Runnable{
 		int x = java.nio.ByteBuffer.wrap(b).order(java.nio.ByteOrder.LITTLE_ENDIAN).getInt();
 		return x;
 	}
-	public void startReceive(int command) throws IOException{
-		out.writeInt(command);
+	public void startReceive(String command) throws IOException{
+		out.writeChars(command);
 		//out.close();
 	}
 	

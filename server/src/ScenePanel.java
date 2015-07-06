@@ -43,7 +43,7 @@ public class ScenePanel extends JPanel implements Callback{
 				finalIntersectArea.init();
 				
 				/*
-				 * set blocking area
+				 * set blocking area like pillars
 				 */
 				double blockLength = 0.7, blockWidth = 1.3;
 				double originalX = 1, originalY = 2.4;
@@ -94,7 +94,7 @@ public class ScenePanel extends JPanel implements Callback{
 			drawGateways(page, gateways, Color.black);
 		} catch (Exception e) {
 			// TODO: handle exception
-			System.out.println("No gateways draw");
+			//System.out.println("No gateways draw");
 		}
 		
 		
@@ -159,7 +159,7 @@ public class ScenePanel extends JPanel implements Callback{
 	public void getMsg(int[] gateway) {
 		// TODO Auto-generated method stub
 			boolean totallyNoSignal = true;
-			System.out.println("Locate Object every 3s!");
+			System.out.println("Locate Object every 2s!");
 			/*
 			 * reset 
 			 */
@@ -167,7 +167,9 @@ public class ScenePanel extends JPanel implements Callback{
 				experimentAreas[i].reset();
 			}
 			finalIntersectArea.reset();
-			
+			/*
+			 * Define gateways and their locations
+			 */
 			gateways = new Gateway[numOfGateways];
 			
 			gateways[0] = new Gateway(this.transRange, 1.6, 0.3);

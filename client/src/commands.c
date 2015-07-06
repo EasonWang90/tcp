@@ -1,25 +1,3 @@
-//
-// Bluegiga’s Bluetooth Smart Demo Application
-// Contact: support@bluegiga.com.
-//
-// This is free software distributed under the terms of the MIT license reproduced below.
-//
-// Copyright (c) 2012, Bluegiga Technologies
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this
-// software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
-// EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
-//
 
 #include <string.h>
 #include <stdio.h>
@@ -56,8 +34,8 @@ int connectServerSocket(){
 
 						struct sockaddr_in serAddr;
 						serAddr.sin_family = AF_INET;
-						serAddr.sin_port = htons(5258);
-						serAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+						serAddr.sin_port = htons(5258); // specify port number
+						serAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");  // specify IP address
 						if (connect(sclient, (struct sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
 						{
 							printf("connect error !");
@@ -86,9 +64,9 @@ void sendMsg(struct message msg){
 
 		//printf("count:%d ",count);
 		int a = send(sclient, sendData, count, 0);
-		if (a == -1){
-			perror("Error");
-			return;
+		if (a == SOCKET_ERROR){
+			printf("\nDisconnected Error, program exit\n");
+			exit(-1);
 		}
 		else{
 			printf("message sent to the server\n");
@@ -638,8 +616,8 @@ void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg
 	//printf("[<] ble_evt_gap_scan_response\n");
     //msg->
 
-    if(msg->sender.addr[5] == 0x00 && msg->sender.addr[4] == 0x07){
-    	messages.gatewayID = 1;
+    if(msg->sender.addr[5] == 0x00 && msg->sender.addr[4] == 0x07){ // Only receive this address
+    	messages.gatewayID = 1; //specify gateway ID
     	int i;
     	for(i=0;i<6;i++)
     	  printf("%02x%s",msg->sender.addr[5-i],i<5?":":"");
@@ -654,9 +632,6 @@ void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg
     	messages.rssi=msg->rssi;
     	if(sclient){
     		sendMsg(messages);
-    	}
-    	else{
-    		printf("stop\n");
     	}
 
     }
